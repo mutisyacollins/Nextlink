@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nextlink Networks | Admin Portal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2300d4ff'/><text y='24' x='4' font-size='22' font-weight='900' fill='%23060c17' font-family='monospace'>N</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://www.gstatic.com/firebasejs/12.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.14.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ── LOGIN SCREEN ── -->
+<section id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="brand-mark">N</div>
+      <div class="login-logo-text">
+        <strong>Nextlink</strong>
+        <span>Networks Admin</span>
+      </div>
+    </div>
+
+    <h2>Welcome back</h2>
+    <p class="subtitle">Sign in to access the Nextlink Networks management portal.</p>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="admin@nextlink.co.ke" required autocomplete="email" />
+      </div>
+      <div class="form-group" style="margin-top:14px">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" id="login-btn">Login to Dashboard</button>
+      <p id="login-error" class="error"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ── MAIN APP ── -->
+<section id="main-app" class="hidden">
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-icon">N</div>
+      <div>
+        <strong>Nextlink</strong>
+        <span>Networks Admin</span>
+      </div>
+    </div>
+
+    <div class="nav-label">Navigation</div>
+    <ul id="sidebar-menu">
+      <li class="active" onclick="showSection('dashboard')">
+        <span class="nav-icon">⊞</span> Dashboard
+      </li>
+      <li onclick="showSection('customers')">
+        <span class="nav-icon">👥</span> Customers
+      </li>
+      <li onclick="showSection('billing')">
+        <span class="nav-icon">💳</span> Billing
+      </li>
+      <li onclick="showSection('packages')">
+        <span class="nav-icon">📦</span> Packages
+      </li>
+      <li onclick="showSection('support')">
+        <span class="nav-icon">🎧</span> Support
+      </li>
+      <li onclick="showSection('analytics')">
+        <span class="nav-icon">📊</span> Analytics
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="logout()">
+        <span>⎋</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:14px">
+        <button class="mobile-menu-btn" onclick="openSidebar()" aria-label="Open menu">☰</button>
+        <div class="topbar-left">
+          <h1 id="page-title">Dashboard</h1>
+          <p id="welcome-text">Welcome back, Nextlink Administrator</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="btn-ghost" onclick="refreshCurrentSection()" title="Refresh" style="padding:8px 10px;font-size:18px;border-radius:8px">↻</button>
+        <div class="topbar-badge">
+          <span class="pulse"></span>
+          Firebase Connected
+        </div>
+      </div>
+    </header>
+
+    <section id="dashboard" class="section"></section>
+    <section id="customers" class="section hidden"></section>
+    <section id="billing"   class="section hidden"></section>
+    <section id="packages"  class="section hidden"></section>
+    <section id="support"   class="section hidden"></section>
+    <section id="analytics" class="section hidden"></section>
+  </main>
+</section>
+
+<script src="firebase-config.js"></script>
+<script src="utils.js"></script>
+<script src="dashboard.js"></script>
+<script src="customers.js"></script>
+<script src="billing.js"></script>
+<script src="packages.js"></script>
+<script src="support.js"></script>
+<script src="analytics.js"></script>
+<script src="customer-profile-drawer.js"></script>
+<script src="admin-upgrade.js"></script>
+<script src="auth.js"></script>
+<script src="admin-pro.js"></script>
+</body>
+</html>
