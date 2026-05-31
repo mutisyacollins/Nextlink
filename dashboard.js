@@ -1,42 +1,23 @@
-// ==================== DASHBOARD.JS — NEXTLINK ISP DASHBOARD V2 ====================
+// ==================== DASHBOARD.JS — NEXTLINK CLEAN ADMIN DASHBOARD ====================
 
 async function loadDashboard() {
-  const dashboardDiv = document.getElementById('dashboard');
+  const dashboardDiv = document.getElementById("dashboard");
 
   dashboardDiv.innerHTML = `
-    <div class="hero-panel dashboard-hero-v2">
+    <div class="simple-dashboard-header">
       <div>
-        <span class="eyebrow">ISP Operations Overview</span>
-        <h2>Nextlink Networks Control Center</h2>
-        <p>Monitor customers, payments, packages, support issues, and connection health from one clean command center.</p>
+        <span class="eyebrow">Admin Overview</span>
+        <h2>Nextlink Networks Dashboard</h2>
+        <p>Quick summary of customers, billing, and support activity.</p>
       </div>
-      <div class="hero-metrics">
-        <div class="hero-metric">
-          <small>Network Status</small>
-          <strong id="network-status-text">🟢 Operational</strong>
-        </div>
-        <div class="hero-metric cyan">
-          <small>Last Refreshed</small>
-          <strong id="last-refresh">—</strong>
-        </div>
-      </div>
-    </div>
-
-    <div class="quick-actions">
-      <button class="quick-action" onclick="showSection('customers')">+ Add / Manage Customer</button>
-      <button class="quick-action" onclick="showSection('billing')">+ Create Bill</button>
-      <button class="quick-action" onclick="showSection('packages')">+ Manage Package</button>
-      <button class="quick-action" onclick="showSection('support')">+ New Ticket</button>
-      <button class="quick-action ghost" onclick="showSection('analytics')">View Analytics →</button>
     </div>
 
     <div class="stats-grid enhanced">
-      ${statCard('Total Customers', 'total-customers', 'Registered users', 'cyan')}
-      ${statCard('Active', 'active-customers', 'Connected accounts', 'green')}
-      ${statCard('Online Now', 'online-customers', 'Live connections', 'purple')}
-      ${statCard('Open Tickets', 'open-tickets', 'Support requests', 'orange')}
-      ${statCard('Pending Bills', 'pending-bills', 'Unpaid invoices', 'pink')}
-      ${statCard('Total Revenue', 'total-revenue', 'Paid bills', 'green')}
+      ${statCard("Total Customers", "total-customers", "Registered users", "cyan")}
+      ${statCard("Active Customers", "active-customers", "Active accounts", "green")}
+      ${statCard("Pending Bills", "pending-bills", "Unpaid invoices", "pink")}
+      ${statCard("Open Tickets", "open-tickets", "Customer issues", "orange")}
+      ${statCard("Total Revenue", "total-revenue", "Paid bills", "green")}
     </div>
 
     <div class="dashboard-grid">
@@ -44,147 +25,109 @@ async function loadDashboard() {
         <div class="card-head">
           <div>
             <h3>Recent Customers</h3>
-            <p>Latest registered users. Click a customer to view profile.</p>
+            <p>Latest registered customers</p>
           </div>
           <button class="btn-secondary" onclick="showSection('customers')">View All →</button>
         </div>
-        <div id="recent-customers"><div class="skeleton" style="height:210px;border-radius:10px"></div></div>
+        <div id="recent-customers">
+          <div class="skeleton" style="height:210px;border-radius:10px"></div>
+        </div>
       </div>
 
       <div class="card">
         <div class="card-head">
-          <div><h3>Operations Snapshot</h3><p>Live business health summary</p></div>
+          <div>
+            <h3>Recent Support Tickets</h3>
+            <p>Latest customer support requests</p>
+          </div>
+          <button class="btn-secondary" onclick="showSection('support')">View All →</button>
         </div>
-        <div id="system-summary" class="summary-list"><div class="skeleton" style="height:210px;border-radius:10px"></div></div>
-      </div>
-    </div>
-
-    <div class="dashboard-grid">
-      <div class="card">
-        <div class="card-head">
-          <div><h3>Package Distribution</h3><p>Customers grouped by service plan</p></div>
+        <div id="recent-support">
+          <div class="skeleton" style="height:210px;border-radius:10px"></div>
         </div>
-        <div id="package-distribution"><div class="skeleton" style="height:160px;border-radius:10px"></div></div>
       </div>
-
-      <div class="card">
-        <div class="card-head">
-          <div><h3>Billing Overview</h3><p>Paid and pending invoice performance</p></div>
-        </div>
-        <div id="billing-overview"><div class="skeleton" style="height:160px;border-radius:10px"></div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <div><h3>Recent Support Activity</h3><p>Latest customer support tickets</p></div>
-        <button class="btn-secondary" onclick="showSection('support')">Open Support →</button>
-      </div>
-      <div id="recent-activity"><div class="skeleton" style="height:150px;border-radius:10px"></div></div>
     </div>
   `;
 
-  const now = new Date();
-  const el = document.getElementById('last-refresh');
-  if (el) el.textContent = now.toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' });
-
   try {
-    const [usersSnapshot, billsSnapshot, ticketsSnapshot, packagesSnapshot, connectionsSnapshot] = await Promise.all([
-      db.collection('users').get(),
-      db.collection('billing').get(),
-      db.collection('supportTickets').get(),
-      db.collection('packages').get(),
-      safeGetCollection('connections')
+    const [usersSnapshot, billsSnapshot, ticketsSnapshot] = await Promise.all([
+      db.collection("users").get(),
+      db.collection("billing").get(),
+      db.collection("supportTickets").get()
     ]);
 
-    const stats = calculateStats(usersSnapshot, billsSnapshot, ticketsSnapshot, packagesSnapshot, connectionsSnapshot);
+    const stats = calculateDashboardStats(
+      usersSnapshot,
+      billsSnapshot,
+      ticketsSnapshot
+    );
 
-    animateCount('total-customers', stats.totalCustomers);
-    animateCount('active-customers', stats.activeCustomers);
-    animateCount('online-customers', stats.onlineCustomers);
-    animateCount('open-tickets', stats.openTickets);
-    animateCount('pending-bills', stats.pendingBills);
-    document.getElementById('total-revenue').textContent = formatMoney(stats.totalRevenue);
+    animateCount("total-customers", stats.totalCustomers);
+    animateCount("active-customers", stats.activeCustomers);
+    animateCount("pending-bills", stats.pendingBills);
+    animateCount("open-tickets", stats.openTickets);
 
-    renderRecentCustomers(usersSnapshot, connectionsSnapshot);
-    renderSystemSummary(stats);
-    renderPackageDistribution(stats.packageCounts);
-    renderBillingOverview(stats);
-    renderRecentActivityFromSnapshot(ticketsSnapshot);
+    const revenueEl = document.getElementById("total-revenue");
+    if (revenueEl) revenueEl.textContent = formatMoney(stats.totalRevenue);
+
+    renderRecentCustomers(usersSnapshot);
+    renderRecentSupportTickets(ticketsSnapshot);
+
   } catch (error) {
-    console.error('Dashboard error:', error);
-    dashboardDiv.insertAdjacentHTML('beforeend', `<div class="alert-error">Failed to load dashboard data. Check Firestore rules and admin access.</div>`);
+    console.error("Dashboard error:", error);
+    dashboardDiv.insertAdjacentHTML(
+      "beforeend",
+      `<div class="alert-error">Failed to load dashboard data. Check Firestore rules and admin access.</div>`
+    );
   }
 }
 
-async function safeGetCollection(name) {
-  try { return await db.collection(name).get(); }
-  catch (e) { console.warn(`Could not read ${name}`, e); return { size: 0, empty: true, forEach: () => {} }; }
-}
-
-function animateCount(id, target) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const duration = 650;
-  const start = performance.now();
-  function step(now) {
-    const progress = Math.min((now - start) / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.round(target * eased);
-    if (progress < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
-function calculateStats(usersSnapshot, billsSnapshot, ticketsSnapshot, packagesSnapshot, connectionsSnapshot) {
-  let activeCustomers = 0, suspendedCustomers = 0, pendingCustomers = 0;
-  let packageCounts = {};
+function calculateDashboardStats(usersSnapshot, billsSnapshot, ticketsSnapshot) {
+  let activeCustomers = 0;
+  let pendingBills = 0;
+  let totalRevenue = 0;
+  let openTickets = 0;
 
   usersSnapshot.forEach(doc => {
     const user = doc.data();
-    const status = (user.status || 'pending').toLowerCase();
-    const plan = user.plan || user.packageName || user.package || 'No Plan';
+    const status = (user.status || "pending").toLowerCase();
 
-    if (status === 'active') activeCustomers++;
-    else if (status === 'suspended') suspendedCustomers++;
-    else pendingCustomers++;
-
-    packageCounts[plan] = (packageCounts[plan] || 0) + 1;
+    if (status === "active") {
+      activeCustomers++;
+    }
   });
 
-  let paidBills = 0, pendingBills = 0, totalRevenue = 0, pendingAmount = 0, totalBillingAmount = 0;
   billsSnapshot.forEach(doc => {
     const bill = doc.data();
-    const status = (bill.paymentStatus || bill.status || 'pending').toLowerCase();
+    const status = (bill.paymentStatus || bill.status || "pending").toLowerCase();
     const amount = Number(bill.amount || bill.total || bill.price || 0);
-    totalBillingAmount += amount;
-    if (status === 'paid') { paidBills++; totalRevenue += amount; }
-    else { pendingBills++; pendingAmount += amount; }
+
+    if (status === "paid") {
+      totalRevenue += amount;
+    } else {
+      pendingBills++;
+    }
   });
 
-  let openTickets = 0, closedTickets = 0;
   ticketsSnapshot.forEach(doc => {
-    const t = doc.data();
-    const status = (t.status || 'open').toLowerCase();
-    if (status === 'open' || status === 'in-progress') openTickets++;
-    if (status === 'closed' || status === 'resolved') closedTickets++;
-  });
+    const ticket = doc.data();
+    const status = (ticket.status || "open").toLowerCase();
 
-  let onlineCustomers = 0;
-  connectionsSnapshot.forEach(doc => {
-    const c = doc.data();
-    if ((c.status || '').toLowerCase() === 'online') onlineCustomers++;
+    if (
+      status === "open" ||
+      status === "in-progress" ||
+      status === "pending"
+    ) {
+      openTickets++;
+    }
   });
 
   return {
     totalCustomers: usersSnapshot.size,
-    activeCustomers, suspendedCustomers, pendingCustomers,
-    onlineCustomers,
-    packages: packagesSnapshot.size,
-    totalBills: billsSnapshot.size, paidBills, pendingBills,
-    totalRevenue, pendingAmount, totalBillingAmount,
-    totalTickets: ticketsSnapshot.size, openTickets, closedTickets,
-    packageCounts
+    activeCustomers,
+    pendingBills,
+    openTickets,
+    totalRevenue
   };
 }
 
@@ -194,109 +137,154 @@ function statCard(title, id, subtitle, colorClass) {
       <div class="stat-label">${title}</div>
       <h2 id="${id}">—</h2>
       <span class="stat-sub">${subtitle}</span>
-    </div>`;
-}
-
-function renderRecentCustomers(snapshot, connectionsSnapshot) {
-  const container = document.getElementById('recent-customers');
-  if (snapshot.empty) { container.innerHTML = emptyState('👥', 'No customers yet.'); return; }
-
-  const connectionMap = {};
-  connectionsSnapshot.forEach(doc => connectionMap[doc.id] = doc.data());
-
-  let users = [];
-  snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data(), connection: connectionMap[doc.id] || {} }));
-  users = users.sort((a, b) => getMillis(b.createdAt) - getMillis(a.createdAt)).slice(0, 6);
-
-  let html = `<div class="table-wrap"><table>
-    <thead><tr><th>Name</th><th>Account</th><th>Plan</th><th>Status</th><th>Connection</th></tr></thead><tbody>`;
-
-  users.forEach(u => {
-    const online = (u.connection.status || '').toLowerCase() === 'online';
-    html += `<tr class="clickable-row" onclick="openCustomerDrawer('${u.id}')">
-      <td><strong>${escapeHtml(getCustomerName(u))}</strong><small>${escapeHtml(u.email || '—')}</small></td>
-      <td class="td-mono">${escapeHtml(u.accountNumber || '—')}</td>
-      <td>${escapeHtml(u.plan || u.packageName || u.package || 'Pending')}</td>
-      <td><span class="status ${escapeHtml(u.status || 'pending')}">${escapeHtml(u.status || 'pending')}</span></td>
-      <td><span class="connection-pill ${online ? 'online' : 'offline'}">${online ? 'Online' : 'Offline'}</span></td>
-    </tr>`;
-  });
-
-  html += `</tbody></table></div>`;
-  container.innerHTML = html;
-}
-
-function renderSystemSummary(data) {
-  const activationRate = data.totalCustomers ? Math.round((data.activeCustomers / data.totalCustomers) * 100) : 0;
-  const collectionRate = data.totalBills ? Math.round((data.paidBills / data.totalBills) * 100) : 0;
-
-  document.getElementById('system-summary').innerHTML = `
-    <div class="summary-item"><span>Total packages</span><strong>${data.packages}</strong></div>
-    <div class="summary-item"><span>Total bills</span><strong>${data.totalBills}</strong></div>
-    <div class="summary-item"><span>Collection rate</span><strong>${collectionRate}%</strong></div>
-    <div class="summary-item"><span>Pending amount</span><strong>${formatMoney(data.pendingAmount)}</strong></div>
-    <div class="summary-item"><span>Suspended accounts</span><strong>${data.suspendedCustomers}</strong></div>
-    <div class="summary-item"><span>Activation rate</span><strong>${activationRate}%</strong></div>
+    </div>
   `;
 }
 
-function renderPackageDistribution(packageCounts) {
-  const container = document.getElementById('package-distribution');
-  const entries = Object.entries(packageCounts);
-  if (!entries.length) { container.innerHTML = emptyState('📦', 'No package data.'); return; }
+function animateCount(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
 
-  const max = Math.max(...entries.map(([, c]) => c));
-  entries.sort((a, b) => b[1] - a[1]);
+  const duration = 650;
+  const start = performance.now();
 
-  container.innerHTML = entries.map(([plan, count]) => {
-    const width = max ? Math.round((count / max) * 100) : 0;
-    return `<div class="bar-row">
-      <div class="bar-info"><span>${escapeHtml(plan)}</span><strong>${count}</strong></div>
-      <div class="bar-track"><div class="bar-fill" style="width:0%" data-target="${width}"></div></div>
-    </div>`;
-  }).join('');
+  function step(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
 
-  setTimeout(() => container.querySelectorAll('.bar-fill').forEach(bar => { bar.style.width = bar.dataset.target + '%'; }), 100);
+    el.textContent = Math.round(target * eased);
+
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    }
+  }
+
+  requestAnimationFrame(step);
 }
 
-function renderBillingOverview(data) {
-  const total = data.paidBills + data.pendingBills;
-  const paidPercent = total ? Math.round((data.paidBills / total) * 100) : 0;
+function renderRecentCustomers(snapshot) {
+  const container = document.getElementById("recent-customers");
+  if (!container) return;
 
-  document.getElementById('billing-overview').innerHTML = `
-    <div class="billing-ring" style="--pct: ${paidPercent}%">
-      <div><strong>${paidPercent}%</strong><span>Paid</span></div>
-    </div>
-    <div class="summary-list">
-      <div class="summary-item"><span>Revenue collected</span><strong>${formatMoney(data.totalRevenue)}</strong></div>
-      <div class="summary-item"><span>Pending amount</span><strong>${formatMoney(data.pendingAmount)}</strong></div>
-      <div class="summary-item"><span>Paid bills</span><strong>${data.paidBills}</strong></div>
-      <div class="summary-item"><span>Pending bills</span><strong>${data.pendingBills}</strong></div>
-    </div>`;
-}
+  if (snapshot.empty) {
+    container.innerHTML = emptyState("👥", "No customers yet.");
+    return;
+  }
 
-function renderRecentActivityFromSnapshot(ticketsSnapshot) {
-  const container = document.getElementById('recent-activity');
-  let tickets = [];
-  ticketsSnapshot.forEach(doc => tickets.push({ id: doc.id, ...doc.data() }));
-  tickets = tickets.sort((a, b) => getMillis(b.createdAt) - getMillis(a.createdAt)).slice(0, 5);
+  let users = [];
 
-  if (!tickets.length) { container.innerHTML = emptyState('🎧', 'No support activity yet.'); return; }
-
-  let html = `<div class="table-wrap"><table>
-    <thead><tr><th>Customer</th><th>Issue</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead><tbody>`;
-
-  tickets.forEach(t => {
-    html += `<tr ${t.customerId ? `class="clickable-row" onclick="openCustomerDrawer('${t.customerId}')"` : ''}>
-      <td><strong>${escapeHtml(t.customerName || t.name || 'Unknown')}</strong><small>${escapeHtml(t.accountNumber || '')}</small></td>
-      <td>${escapeHtml(t.issue || t.subject || 'No subject')}</td>
-      <td><span class="ticket-priority priority-${escapeHtml(t.priority || 'medium')}">${escapeHtml(t.priority || 'medium')}</span></td>
-      <td><span class="status ${escapeHtml(t.status || 'open')}">${escapeHtml(t.status || 'open')}</span></td>
-      <td>${formatDate(t.createdAt)}</td>
-    </tr>`;
+  snapshot.forEach(doc => {
+    users.push({
+      id: doc.id,
+      ...doc.data()
+    });
   });
 
-  html += `</tbody></table></div>`;
+  users = users
+    .sort((a, b) => getMillis(b.createdAt) - getMillis(a.createdAt))
+    .slice(0, 5);
+
+  let html = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Package</th>
+            <th>Status</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  users.forEach(user => {
+    html += `
+      <tr class="clickable-row" onclick="openCustomerDrawer('${user.id}')">
+        <td>
+          <strong>${escapeHtml(getCustomerName(user))}</strong>
+          <small>${escapeHtml(user.email || "—")}</small>
+        </td>
+        <td>${escapeHtml(user.plan || user.packageName || user.package || "Pending")}</td>
+        <td>
+          <span class="status ${escapeHtml(user.status || "pending")}">
+            ${escapeHtml(user.status || "pending")}
+          </span>
+        </td>
+        <td>${formatDate(user.createdAt)}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+function renderRecentSupportTickets(snapshot) {
+  const container = document.getElementById("recent-support");
+  if (!container) return;
+
+  if (snapshot.empty) {
+    container.innerHTML = emptyState("🎧", "No support tickets yet.");
+    return;
+  }
+
+  let tickets = [];
+
+  snapshot.forEach(doc => {
+    tickets.push({
+      id: doc.id,
+      ...doc.data()
+    });
+  });
+
+  tickets = tickets
+    .sort((a, b) => getMillis(b.createdAt) - getMillis(a.createdAt))
+    .slice(0, 5);
+
+  let html = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Issue</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  tickets.forEach(ticket => {
+    html += `
+      <tr ${ticket.customerId ? `class="clickable-row" onclick="openCustomerDrawer('${ticket.customerId}')"` : ""}>
+        <td>
+          <strong>${escapeHtml(ticket.customerName || ticket.name || "Unknown")}</strong>
+          <small>${escapeHtml(ticket.accountNumber || "")}</small>
+        </td>
+        <td>${escapeHtml(ticket.issue || ticket.subject || "No subject")}</td>
+        <td>
+          <span class="status ${escapeHtml(ticket.status || "open")}">
+            ${escapeHtml(ticket.status || "open")}
+          </span>
+        </td>
+        <td>${formatDate(ticket.createdAt)}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
   container.innerHTML = html;
 }
 
